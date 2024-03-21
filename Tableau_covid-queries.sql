@@ -34,7 +34,7 @@ ORDER BY date;
 
 
 -- 3. Total death count grouped by location (continent) 
--- We want to know the information per continent based on the 'location' column. Therefore don't need to include some values (restriction in WHERE)
+-- We want to know the information per continent based on the 'location' column. Therefore, we don't need to include some values (restriction in WHERE)
 SELECT location, SUM(new_deaths) as Total_Death_Count
 FROM `covid-deaths`
 WHERE continent = ""
@@ -43,7 +43,8 @@ WHERE continent = ""
 GROUP BY location
 ORDER BY Total_Death_Count DESC;
 
--- 4. Countries with a higher percentage of cases compared to population (Important to remember the total cases may count the same person more than once if they have been reinfected
+
+-- 4. Countries with a higher percentage of cases compared to population (It is important to remember the total cases may count the same person more than once if they have been reinfected
 SELECT Location, Population, MAX(total_cases) as HighestInfectionCount,  ROUND(Max((total_cases/population)) *100, 5) as PercentPopulationInfected
 FROM `covid-deaths`
 WHERE continent != "" -- Only select countries and not continents as well
@@ -51,13 +52,15 @@ WHERE continent != "" -- Only select countries and not continents as well
 GROUP BY Location, Population
 ORDER BY PercentPopulationInfected DESC;
 
+
 -- 5. Countries with a higher percentage of death compared to the population
-SELECT Location, Population, MAX(total_deaths) as HighestDeathCount,  ROUND(Max((total_deaths/population)) *100, 5) as PercentPopulationDeath
+SELECT Location, Population, MAX(total_deaths) as HighestDeathCount,  Max(total_deaths_per_million) as DeathsPerMillion
 FROM `covid-deaths`
 WHERE continent != "" -- Only select countries and not continents as well
 	AND date < '2024-01-01'
 GROUP BY Location, Population
-ORDER BY PercentPopulationDeath DESC;
+ORDER BY DeathsPerMillion DESC;
+
 
 -- 6. Countries with a higher percentage of cases compared to the population per day
 SELECT Location, Population, date, MAX(total_cases) as HighestInfectionCount,  ROUND(MAX((total_cases/population))*100, 5) as PercentPopulationInfected
@@ -67,8 +70,20 @@ WHERE continent != "" -- Only select countries and not continents as well
 GROUP BY Location, Population, date;
 -- ORDER BY PercentPopulationInfected DESC;
 
+
 -- 7. Countries with a higher percentage of deaths compared to the population per day
 SELECT Location, Population, date, MAX(total_deaths) as HighestDeathsCount,  ROUND(MAX((total_deaths/population))*100, 5) as PercentPopulationDeaths
+FROM `covid-deaths`
+WHERE continent != "" -- Only select countries and not continents as well
+	AND date < '2024-01-01'
+GROUP BY Location, Population, date
+ORDER BY PercentPopulationDeaths DESC;
+
+
+-- 8. Similar to the previous one but it's using total deaths per million instead of the percentage
+SELECT Location, Population, date, MAX(total_deaths) as HighestDeathsCount, 
+	ROUND(MAX((total_deaths/population))*100, 5) as PercentPopulationDeaths,
+	MAX(total_deaths_per_million) AS DeathsPerMillion
 FROM `covid-deaths`
 WHERE continent != "" -- Only select countries and not continents as well
 	AND date < '2024-01-01'
